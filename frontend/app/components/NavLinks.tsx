@@ -20,7 +20,6 @@ const PRIMARY_GROUPS: Array<{ items: Array<{ href: string; label: string }> }> =
   },
   {
     items: [
-      { href: '/concepts', label: 'Concepts' },
       { href: '/quality', label: 'Quality' },
       { href: '/calendar', label: 'Calendar' },
     ],

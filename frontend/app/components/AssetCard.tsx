@@ -1,5 +1,5 @@
 'use client';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AssetSummary, classifyHook, classifyRoas, fmtMoney, fmtNum, fmtPct, mediaUrlFor } from '../lib/api';
 
 function aspectRatioCSS(w: number | null, h: number | null): string {
@@ -26,8 +26,30 @@ export default function AssetCard({
   onToggleSelect?: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const isImage = a.asset_type === 'image';
   const aspect = aspectRatioCSS(a.actual_width, a.actual_height);
+
+  // Lazy-load video src once the card scrolls within ~400px of the viewport.
+  // Without this, all 48 visible (plus off-screen) cards would simultaneously
+  // fire preload="metadata" requests on mount, hammering bandwidth.
+  const [shouldLoad, setShouldLoad] = useState(false);
+  useEffect(() => {
+    if (isImage || shouldLoad) return;
+    const node = cardRef.current;
+    if (!node) return;
+    if (typeof IntersectionObserver === 'undefined') { setShouldLoad(true); return; }
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) { setShouldLoad(true); obs.disconnect(); break; }
+        }
+      },
+      { rootMargin: '400px 0px' },
+    );
+    obs.observe(node);
+    return () => obs.disconnect();
+  }, [isImage, shouldLoad]);
 
   function onEnter() {
     if (!isImage && videoRef.current) {
@@ -46,6 +68,7 @@ export default function AssetCard({
 
   return (
     <div
+      ref={cardRef}
       className={`card ${selected ? 'card-selected' : ''}`}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
@@ -68,7 +91,7 @@ export default function AssetCard({
         ) : (
           <video
             ref={videoRef}
-            src={mediaUrl}
+            src={shouldLoad ? mediaUrl : undefined}
             muted
             loop
             playsInline
