@@ -134,7 +134,7 @@ export default function AskAnything() {
     setMessages(next);
     setBusy(true);
     try {
-      const r = await fetch('/api/_chat', {
+      const r = await fetch('/ama-chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ messages: next }),
