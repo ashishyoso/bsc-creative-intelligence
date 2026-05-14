@@ -25,6 +25,7 @@ class AssetSummary(BaseModel):
     asset_id: str
     asset_type: str
     storage_path: str
+    mapping_key: Optional[str] = None
     mapping_status: str
     mapping_resolution_note: Optional[str]
     actual_duration_seconds: Optional[float]

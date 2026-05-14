@@ -4,6 +4,7 @@ import Link from 'next/link';
 import NavLinks from './components/NavLinks';
 import SettingsMenu from './components/SettingsMenu';
 import { ToastProvider } from './components/Toast';
+import AskAnything from './components/AskAnything';
 
 export const metadata: Metadata = {
   title: 'YOSO-BSC Creative Intelligence',
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </nav>
           </header>
           <main>{children}</main>
+          <AskAnything />
         </ToastProvider>
       </body>
     </html>

@@ -143,6 +143,7 @@ def list_assets(
                 asset_id=asset.asset_id,
                 asset_type=asset.asset_type,
                 storage_path=asset.storage_path,
+                mapping_key=asset.mapping_key,
                 mapping_status=asset.mapping_status,
                 mapping_resolution_note=asset.mapping_resolution_note,
                 actual_duration_seconds=asset.actual_duration_seconds,

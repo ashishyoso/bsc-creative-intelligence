@@ -32,7 +32,14 @@ export type AssetSummary = {
   brand_visible_first_3s: boolean | null;
   follows_60pct_rule: boolean | null;
   sku_confidence: number | null;
+  mapping_key?: string | null;
 };
+
+export function mediaUrlFor(a: { asset_id: string; mapping_key?: string | null }): string {
+  const key = a.mapping_key ?? null;
+  if (key && /^https?:\/\//i.test(key)) return key;
+  return `/media/${a.asset_id}`;
+}
 
 export type MappingQueueItem = {
   asset_id: string;

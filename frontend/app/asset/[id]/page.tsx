@@ -1,7 +1,7 @@
 'use client';
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { api, classifyHook, classifyRoas, fmtMoney, fmtNum, fmtPct } from '../../lib/api';
+import { api, classifyHook, classifyRoas, fmtMoney, fmtNum, fmtPct, mediaUrlFor } from '../../lib/api';
 
 export default function AssetDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -59,20 +59,24 @@ export default function AssetDetailPage({ params }: { params: Promise<{ id: stri
             borderRadius: 8,
             overflow: 'hidden',
           }}>
-            {isImage ? (
-              <img
-                src={`/media/${data.asset_id}`}
-                alt=""
-                style={{ maxWidth: '100%', maxHeight: '70vh', width: 'auto', height: 'auto', objectFit: 'contain' }}
-              />
-            ) : (
-              <video
-                src={`/media/${data.asset_id}`}
-                controls
-                preload="metadata"
-                style={{ maxWidth: '100%', maxHeight: '70vh', width: 'auto', height: 'auto' }}
-              />
-            )}
+            {(() => {
+              const src = mediaUrlFor({ asset_id: data.asset_id, mapping_key: data.mapping_key });
+              return isImage ? (
+                <img
+                  src={src}
+                  alt=""
+                  style={{ maxWidth: '100%', maxHeight: '70vh', width: 'auto', height: 'auto', objectFit: 'contain' }}
+                />
+              ) : (
+                <video
+                  src={src}
+                  controls
+                  preload="metadata"
+                  crossOrigin="anonymous"
+                  style={{ maxWidth: '100%', maxHeight: '70vh', width: 'auto', height: 'auto' }}
+                />
+              );
+            })()}
           </div>
           <div className="panel" style={{ marginTop: 12 }}>
             <h2>File &amp; mapping</h2>

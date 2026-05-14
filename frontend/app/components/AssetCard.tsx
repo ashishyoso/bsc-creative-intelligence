@@ -1,6 +1,6 @@
 'use client';
 import { useRef, useState } from 'react';
-import { AssetSummary, classifyHook, classifyRoas, fmtMoney, fmtNum, fmtPct } from '../lib/api';
+import { AssetSummary, classifyHook, classifyRoas, fmtMoney, fmtNum, fmtPct, mediaUrlFor } from '../lib/api';
 
 function aspectRatioCSS(w: number | null, h: number | null): string {
   if (!w || !h || w <= 0 || h <= 0) return '9 / 16';
@@ -44,7 +44,7 @@ export default function AssetCard({
     }
   }
 
-  const mediaUrl = `/media/${a.asset_id}`;
+  const mediaUrl = mediaUrlFor(a);
   const thumbUrl = `/media/${a.asset_id}/frame/hook_0_5s`;
 
   return (
