@@ -1,18 +1,18 @@
 # Backend image for YOSO-BSC Creative Intelligence on Railway.
 # Includes ffmpeg/ffprobe for frame extraction + audio probing.
-FROM python:3.12-slim
+FROM python:3.12-slim-bookworm
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    DEBIAN_FRONTEND=noninteractive
 
-# System deps: ffmpeg (frames + probes), git (some Python wheels need it)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        ffmpeg \
-        ca-certificates \
-        curl \
-    && rm -rf /var/lib/apt/lists/*
+# ffmpeg only — ca-certificates ships with python:3.12-slim already; httpx
+# covers our HTTP needs so we drop curl. Single layer, cleaned in-place.
+RUN apt-get update -o Acquire::Retries=3 && \
+    apt-get install -y --no-install-recommends ffmpeg && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -24,7 +24,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 COPY scripts ./scripts
 
-# Railway mounts the persistent volume at this path; we mkdir as fallback
+# Railway mounts the persistent volume here; mkdir is a fallback for first boot
 RUN mkdir -p /app/vault/videos /app/vault/frames /app/vault/db
 
 ENV VAULT_ROOT=/app/vault \
@@ -32,5 +32,4 @@ ENV VAULT_ROOT=/app/vault \
 
 EXPOSE 8000
 
-# Railway sets $PORT — fall back to 8000 locally
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2"]
