@@ -157,13 +157,15 @@ export default function AskAnything() {
 
   return (
     <>
-      <button
-        className={`ama-fab ${open ? 'ama-fab-open' : ''}`}
-        onClick={() => setOpen((v) => !v)}
-        aria-label="Ask me anything"
-      >
-        {open ? '✕' : 'Ask'}
-      </button>
+      {!open && (
+        <button
+          className="ama-fab"
+          onClick={() => setOpen(true)}
+          aria-label="Ask me anything"
+        >
+          Ask
+        </button>
+      )}
 
       <div className={`ama-drawer ${open ? 'ama-drawer-open' : ''}`} aria-hidden={!open}>
         <div className="ama-header">

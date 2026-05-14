@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { api, classifyHook, classifyRoas, fmtMoney, fmtNum, fmtPct } from '../lib/api';
+import { api, classifyHook, classifyRoas, fmtMoney, fmtNum, fmtPct, mediaUrlFor } from '../lib/api';
 
 export default function AssetDrawer({
   assetId,
@@ -106,11 +106,14 @@ function DrawerContent({ data }: { data: any }) {
         background: '#000', borderRadius: 8, overflow: 'hidden',
         aspectRatio: aspect,
       }}>
-        {isImage ? (
-          <img src={`/media/${data.asset_id}`} alt="" style={{ maxWidth: '100%', maxHeight: '50vh', objectFit: 'contain' }} />
-        ) : (
-          <video src={`/media/${data.asset_id}`} controls preload="metadata" style={{ maxWidth: '100%', maxHeight: '50vh' }} />
-        )}
+        {(() => {
+          const src = mediaUrlFor({ asset_id: data.asset_id, mapping_key: data.mapping_key });
+          return isImage ? (
+            <img src={src} alt="" style={{ maxWidth: '100%', maxHeight: '50vh', objectFit: 'contain' }} />
+          ) : (
+            <video src={src} controls preload="metadata" style={{ maxWidth: '100%', maxHeight: '50vh' }} />
+          );
+        })()}
       </div>
 
       <div className="panel" style={{ marginTop: 14 }}>
