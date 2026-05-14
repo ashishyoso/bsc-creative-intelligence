@@ -19,12 +19,13 @@ function extractChart(text: string): { body: string; chart: ChartSpec | null } {
 }
 
 function confidenceFrom(text: string): 'high' | 'medium' | 'low' | 'none' | null {
-  const m = text.match(/Confidence:\s*(high|medium|low|none)/i);
+  const m = text.match(/Confidence:\s*\**(high|medium|low|none)\**/i);
   return m ? (m[1].toLowerCase() as 'high' | 'medium' | 'low' | 'none') : null;
 }
 
 function stripConfidence(text: string): string {
-  return text.replace(/\n*Confidence:\s*(high|medium|low|none)\s*$/i, '').trim();
+  // Drop the entire Confidence line (and any trailing context) wherever it appears.
+  return text.replace(/^[ \t]*Confidence:.*$/gim, '').replace(/\n{3,}/g, '\n\n').trim();
 }
 
 function BarChart({ spec }: { spec: ChartSpec }) {

@@ -72,7 +72,6 @@ export default function AssetDetailPage({ params }: { params: Promise<{ id: stri
                   src={src}
                   controls
                   preload="metadata"
-                  crossOrigin="anonymous"
                   style={{ maxWidth: '100%', maxHeight: '70vh', width: 'auto', height: 'auto' }}
                 />
               );
