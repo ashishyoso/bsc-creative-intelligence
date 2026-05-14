@@ -1,0 +1,21 @@
+# Nixpacks build config — bypass Docker apt-get which Railway's SEA workers
+# have been killing during ffmpeg install. Nix builds the runtime image with
+# ffmpeg + Python pre-baked, no Debian package install at deploy time.
+
+providers = ["python"]
+
+[variables]
+NIXPACKS_PYTHON_VERSION = "3.12"
+
+[phases.setup]
+nixPkgs = ["python312", "ffmpeg-full"]
+
+[phases.install]
+cmds = [
+  "python -m venv --copies /opt/venv",
+  "/opt/venv/bin/pip install --upgrade pip",
+  "/opt/venv/bin/pip install -r backend/requirements.txt"
+]
+
+[start]
+cmd = "cd backend && /opt/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2"
