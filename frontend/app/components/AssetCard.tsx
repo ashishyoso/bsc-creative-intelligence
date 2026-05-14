@@ -43,10 +43,6 @@ export default function AssetCard({
   }
 
   const mediaUrl = mediaUrlFor(a);
-  // Append a t=0.5 fragment so the browser seeks to 0.5s for the poster frame.
-  // Browsers only fetch metadata + a tiny seek window — cheaper than fetching a
-  // full thumbnail, and works without any server-side frame extraction.
-  const videoSrc = !isImage ? `${mediaUrl}#t=0.5` : mediaUrl;
 
   return (
     <div
@@ -72,11 +68,12 @@ export default function AssetCard({
         ) : (
           <video
             ref={videoRef}
-            src={videoSrc}
+            src={mediaUrl}
             muted
             loop
             playsInline
             preload="metadata"
+            onLoadedMetadata={(e) => { try { e.currentTarget.currentTime = 0.5; } catch {} }}
             style={{ objectFit: 'contain' }}
           />
         )}
