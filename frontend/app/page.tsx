@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AssetSummary, api } from './lib/api';
 import AssetCard from './components/AssetCard';
@@ -24,6 +24,14 @@ const SORT_OPTIONS = [
 const PAGE_SIZE = 48;
 
 export default function LibraryPage() {
+  return (
+    <Suspense fallback={<div className="panel subtle">Loading library…</div>}>
+      <LibraryPageInner />
+    </Suspense>
+  );
+}
+
+function LibraryPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const toast = useToast();

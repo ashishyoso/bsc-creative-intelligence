@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { api, fmtMoney, fmtNum, fmtPct } from '../lib/api';
@@ -34,6 +34,14 @@ const COMPARE_ROWS: Array<{ label: string; path: (d: Detail) => any; format?: (v
 ];
 
 export default function ComparePage() {
+  return (
+    <Suspense fallback={<div className="panel subtle">Loading…</div>}>
+      <ComparePageInner />
+    </Suspense>
+  );
+}
+
+function ComparePageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const idsStr = searchParams.get('ids') ?? '';
