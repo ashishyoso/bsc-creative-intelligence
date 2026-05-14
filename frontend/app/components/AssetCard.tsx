@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { AssetSummary, classifyHook, classifyRoas, fmtMoney, fmtNum, fmtPct, mediaUrlFor } from '../lib/api';
 
 function aspectRatioCSS(w: number | null, h: number | null): string {
@@ -25,27 +25,28 @@ export default function AssetCard({
   selected?: boolean;
   onToggleSelect?: () => void;
 }) {
-  const [hover, setHover] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const isImage = a.asset_type === 'image';
   const aspect = aspectRatioCSS(a.actual_width, a.actual_height);
 
   function onEnter() {
-    setHover(true);
     if (!isImage && videoRef.current) {
       videoRef.current.currentTime = 0;
       videoRef.current.play().catch(() => {});
     }
   }
   function onLeave() {
-    setHover(false);
     if (!isImage && videoRef.current) {
       videoRef.current.pause();
+      try { videoRef.current.currentTime = 0.5; } catch {}
     }
   }
 
   const mediaUrl = mediaUrlFor(a);
-  const thumbUrl = `/media/${a.asset_id}/frame/hook_0_5s`;
+  // Append a t=0.5 fragment so the browser seeks to 0.5s for the poster frame.
+  // Browsers only fetch metadata + a tiny seek window — cheaper than fetching a
+  // full thumbnail, and works without any server-side frame extraction.
+  const videoSrc = !isImage ? `${mediaUrl}#t=0.5` : mediaUrl;
 
   return (
     <div
@@ -69,24 +70,15 @@ export default function AssetCard({
         {isImage ? (
           <img src={mediaUrl} alt={a.primary_ad_name ?? a.asset_id} loading="lazy" style={{ objectFit: 'contain' }} />
         ) : (
-          <>
-            <img
-              src={thumbUrl}
-              alt={a.primary_ad_name ?? a.asset_id}
-              loading="lazy"
-              style={{ display: hover ? 'none' : 'block', objectFit: 'contain' }}
-              onError={(e) => ((e.currentTarget.style.display = 'none'))}
-            />
-            <video
-              ref={videoRef}
-              src={mediaUrl}
-              muted
-              loop
-              playsInline
-              preload="none"
-              style={{ display: hover ? 'block' : 'none', objectFit: 'contain' }}
-            />
-          </>
+          <video
+            ref={videoRef}
+            src={videoSrc}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            style={{ objectFit: 'contain' }}
+          />
         )}
         {isImage && <span className="badge image">image</span>}
         {a.mapping_status !== 'VERIFIED' && a.mapping_status !== 'MANUALLY_CONFIRMED' && (
