@@ -34,6 +34,11 @@ def _verify_jwt(token: str) -> dict:
         raise HTTPException(401, f"invalid_token: {e}")
 
 
+def _bootstrap_admin_emails() -> set[str]:
+    raw = os.getenv("INSPIRATION_BOOTSTRAP_ADMIN_EMAILS", "")
+    return {e.strip().lower() for e in raw.split(",") if e.strip()}
+
+
 def _upsert_user(db: Session, claims: dict) -> User:
     sub = claims.get("sub")
     email = claims.get("email")
@@ -48,6 +53,14 @@ def _upsert_user(db: Session, claims: dict) -> User:
         user = User(id=ulid(), email=email, name=name, sso_subject=sub, is_active=True)
         db.add(user)
         db.flush()
+
+        # Bootstrap: emails listed in INSPIRATION_BOOTSTRAP_ADMIN_EMAILS get
+        # admin + founder on first sign-in. Keeps the chicken-and-egg out of
+        # SQL. Subsequent logins are no-ops because the user already exists.
+        if email.lower() in _bootstrap_admin_emails():
+            db.add(UserRole(user_id=user.id, role="admin"))
+            db.add(UserRole(user_id=user.id, role="founder"))
+            db.flush()
     elif user.sso_subject is None:
         user.sso_subject = sub
     return user

@@ -164,10 +164,14 @@ export type RouteCoverageRow = {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   // Frontend calls go through Next's /api/:path* rewrite to FastAPI,
   // which serves the Inspiration routers at /inspiration/...
+  const { getAccessToken } = await import('./session');
+  const token = await getAccessToken();
+  const authHeader: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
   const resp = await fetch(`/api/inspiration${path}`, {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
+      ...authHeader,
       ...(init?.headers ?? {}),
     },
     ...init,
