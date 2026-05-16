@@ -89,7 +89,18 @@ def update_route(
     if r.is_archived:
         raise HTTPException(409, "route_archived")
 
-    # Snapshot previous version before mutating (US-1.2 versioning)
+    # Apply mutations, bump version, then snapshot at the new version
+    # (US-1.2). create_route already wrote v1 to route_versions, so writing
+    # another row at the same version conflicts on the (route_id, version)
+    # unique key. Snapshotting after the bump keeps the history monotonic.
+    r.name = body.name.strip()
+    r.design_tone = body.design_tone
+    r.hard_no_list = body.hard_no_list
+    r.funnel_split = body.funnel_split
+    r.static_format_notes = body.static_format_notes
+    r.gif_format_notes = body.gif_format_notes
+    r.video_format_notes = body.video_format_notes
+    r.version = r.version + 1
     db.add(
         RouteVersion(
             id=ulid(),
@@ -99,14 +110,6 @@ def update_route(
             edited_by=user.id,
         )
     )
-    r.name = body.name.strip()
-    r.design_tone = body.design_tone
-    r.hard_no_list = body.hard_no_list
-    r.funnel_split = body.funnel_split
-    r.static_format_notes = body.static_format_notes
-    r.gif_format_notes = body.gif_format_notes
-    r.video_format_notes = body.video_format_notes
-    r.version = r.version + 1
     db.commit()
     db.refresh(r)
     return r
