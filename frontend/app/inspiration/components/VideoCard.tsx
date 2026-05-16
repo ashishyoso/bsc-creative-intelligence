@@ -1,9 +1,29 @@
 'use client';
 import { VideoSummary } from '../lib/api';
 
+// Convert common embed-style URLs to inline-playable form.
+function asEmbed(url: string): { kind: 'iframe' | 'video' | 'none'; src: string } {
+  if (!url) return { kind: 'none', src: '' };
+
+  // YouTube — watch?v=ID, youtu.be/ID, shorts/ID → /embed/ID
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
+  if (yt) return { kind: 'iframe', src: `https://www.youtube.com/embed/${yt[1]}` };
+
+  // Vimeo
+  const vimeo = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vimeo) return { kind: 'iframe', src: `https://player.vimeo.com/video/${vimeo[1]}` };
+
+  // Instagram Reel — render as iframe; falls back to "view at original" if blocked
+  const ig = url.match(/instagram\.com\/(?:reel|p)\/([A-Za-z0-9_-]+)/);
+  if (ig) return { kind: 'iframe', src: `https://www.instagram.com/p/${ig[1]}/embed/` };
+
+  return { kind: 'video', src: url };
+}
+
 // US-3.3 inline player + US-3.4 metadata display.
 export default function VideoCard({ video }: { video: VideoSummary }) {
   const url = video.video_url_cached || video.video_url;
+  const embed = asEmbed(url);
   return (
     <div className="panel" style={{ padding: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -17,10 +37,19 @@ export default function VideoCard({ video }: { video: VideoSummary }) {
         <a href={video.video_url} target="_blank" rel="noopener" className="subtle">View on {video.source_channel} ↗</a>
       </div>
 
-      <div style={{ background: '#000', maxHeight: 480, display: 'flex', justifyContent: 'center' }}>
-        {url ? (
-          <video src={url} controls autoPlay muted style={{ maxWidth: '100%', maxHeight: 480 }} />
-        ) : (
+      <div style={{ background: '#000', display: 'flex', justifyContent: 'center', aspectRatio: '16 / 9', maxHeight: 480 }}>
+        {embed.kind === 'iframe' && (
+          <iframe
+            src={embed.src}
+            allow="autoplay; encrypted-media; picture-in-picture"
+            allowFullScreen
+            style={{ width: '100%', height: '100%', border: 0 }}
+          />
+        )}
+        {embed.kind === 'video' && (
+          <video src={embed.src} controls autoPlay muted style={{ maxWidth: '100%', maxHeight: 480 }} />
+        )}
+        {embed.kind === 'none' && (
           <div className="subtle" style={{ padding: 32 }}>Source unavailable</div>
         )}
       </div>

@@ -38,8 +38,11 @@ def _apply_filters(
     if source_channels:
         q = q.filter(Video.source_channel.in_(source_channels))
     if min_days_running is not None:
-        # US-4.3 — only applies to sources that report days_running
-        q = q.filter(Video.days_running >= min_days_running)
+        # US-4.3 — only applies to sources that report days_running.
+        # Sources without it (manual, tiktok, brand_site, sometimes YouTube)
+        # pass through the filter rather than getting excluded.
+        from sqlalchemy import or_ as _or
+        q = q.filter(_or(Video.days_running.is_(None), Video.days_running >= min_days_running))
     if duration_bucket:
         bounds = {"3-6": (3, 6), "6-15": (6, 15), "15-30": (15, 30), "30+": (30, None)}.get(duration_bucket)
         if bounds:
