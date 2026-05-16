@@ -5,6 +5,11 @@ import { usePathname } from 'next/navigation';
 const PRIMARY_GROUPS: Array<{ items: Array<{ href: string; label: string }> }> = [
   {
     items: [
+      { href: '/inspiration', label: 'Inspiration' },
+    ],
+  },
+  {
+    items: [
       { href: '/leaderboards', label: 'Leaderboards' },
       { href: '/combinatorial', label: 'Combinations' },
       { href: '/anti-patterns', label: 'Anti-patterns' },

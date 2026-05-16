@@ -30,6 +30,21 @@ from app.config import settings
 from app.db import models  # noqa: F401 -- register models
 from app.db.session import Base, engine
 
+# Inspiration tool (separate DB; mounted lazily — only registers routes if
+# INSPIRATION_DATABASE_URL is configured)
+from app.inspiration.routers import (
+    products as insp_products_router,
+    routes as insp_routes_router,
+    watchlist as insp_watchlist_router,
+    users as insp_users_router,
+    videos as insp_videos_router,
+    decisions as insp_decisions_router,
+    references as insp_references_router,
+    escalations as insp_escalations_router,
+    sources as insp_sources_router,
+    reports as insp_reports_router,
+)
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 log = logging.getLogger(__name__)
 
@@ -135,6 +150,35 @@ app.include_router(quality_router.router)
 app.include_router(persona_router.router)
 app.include_router(calendar_router.router)
 app.include_router(admin_router.router)
+
+# Inspiration router (US-1 through US-9 P0 surface). Activates iff the
+# separate Postgres URL is configured — otherwise endpoints will return
+# 500 with a clear message at first hit, and the rest of the pilot is
+# unaffected.
+if os.getenv("INSPIRATION_DATABASE_URL") or os.getenv("DATABASE_URL"):
+    app.include_router(insp_products_router.router)
+    app.include_router(insp_routes_router.router)
+    app.include_router(insp_watchlist_router.router)
+    app.include_router(insp_users_router.router)
+    app.include_router(insp_videos_router.router)
+    app.include_router(insp_decisions_router.router)
+    app.include_router(insp_references_router.router)
+    app.include_router(insp_escalations_router.router)
+    app.include_router(insp_sources_router.router)
+    app.include_router(insp_reports_router.router)
+
+    # Cron registration. Schedulers are no-ops if APScheduler is not installed.
+    @app.on_event("startup")
+    def _start_inspiration_scheduler():
+        from app.inspiration.ingest.scheduler import start as _start
+        _start()
+
+    @app.on_event("shutdown")
+    def _stop_inspiration_scheduler():
+        from app.inspiration.ingest.scheduler import shutdown as _stop
+        _stop()
+else:
+    log.info("Inspiration router disabled: INSPIRATION_DATABASE_URL not set")
 
 
 @app.get("/health")

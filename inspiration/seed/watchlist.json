@@ -1,0 +1,47 @@
+{
+  "_note": "Seed watchlist from spec Appendix B. Update monthly with Founder sign-off. Each brand × source combination is a separate entry.",
+  "entries": [
+    { "brand": "Manscaped", "source_channel": "meta_ad_library", "source_external_id": null, "priority": "high", "product_associations": ["FBT SE"] },
+    { "brand": "Manscaped", "source_channel": "youtube", "source_external_id": null, "priority": "high", "product_associations": ["FBT SE"] },
+    { "brand": "Manscaped", "source_channel": "tiktok", "source_external_id": "manscaped", "priority": "high", "product_associations": ["FBT SE"] },
+    { "brand": "Manscaped", "source_channel": "brand_site", "source_external_id": "https://www.manscaped.com", "priority": "high", "product_associations": ["FBT SE"] },
+
+    { "brand": "The Lawn Mower 4.0 (Manscaped)", "source_channel": "meta_ad_library", "source_external_id": null, "priority": "high", "product_associations": ["FBT SE"] },
+    { "brand": "The Lawn Mower 4.0 (Manscaped)", "source_channel": "youtube", "source_external_id": null, "priority": "high", "product_associations": ["FBT SE"] },
+
+    { "brand": "Meridian", "source_channel": "meta_ad_library", "source_external_id": null, "priority": "high", "product_associations": ["FBT SE"], "notes": "EU/UK arbitrage" },
+    { "brand": "Meridian", "source_channel": "youtube", "source_external_id": null, "priority": "high", "product_associations": ["FBT SE"] },
+    { "brand": "Meridian", "source_channel": "brand_site", "source_external_id": "https://www.meridiangrooming.com", "priority": "high", "product_associations": ["FBT SE"] },
+
+    { "brand": "Philips OneBlade", "source_channel": "meta_ad_library", "source_external_id": null, "priority": "high", "product_associations": ["FBT SE"] },
+    { "brand": "Philips OneBlade", "source_channel": "youtube", "source_external_id": null, "priority": "high", "product_associations": ["FBT SE"] },
+    { "brand": "Philips OneBlade", "source_channel": "brand_site", "source_external_id": "https://www.philips.com/oneblade", "priority": "high", "product_associations": ["FBT SE"] },
+
+    { "brand": "Braun", "source_channel": "meta_ad_library", "source_external_id": null, "priority": "medium", "product_associations": ["FBT SE"] },
+    { "brand": "Braun", "source_channel": "youtube", "source_external_id": null, "priority": "medium", "product_associations": ["FBT SE"] },
+
+    { "brand": "Wahl", "source_channel": "meta_ad_library", "source_external_id": null, "priority": "medium", "product_associations": ["FBT SE"] },
+    { "brand": "Wahl", "source_channel": "youtube", "source_external_id": null, "priority": "medium", "product_associations": ["FBT SE"] },
+
+    { "brand": "Bevel", "source_channel": "youtube", "source_external_id": null, "priority": "medium", "product_associations": ["FBT SE"] },
+    { "brand": "Bevel", "source_channel": "brand_site", "source_external_id": "https://getbevel.com", "priority": "medium", "product_associations": ["FBT SE"] },
+
+    { "brand": "Beardo", "source_channel": "youtube", "source_external_id": null, "priority": "medium", "product_associations": ["FBT SE"] },
+    { "brand": "Beardo", "source_channel": "brand_site", "source_external_id": "https://beardo.in", "priority": "medium", "product_associations": ["FBT SE"] },
+    { "brand": "Beardo", "source_channel": "manual", "source_external_id": null, "priority": "medium", "product_associations": ["FBT SE"] },
+
+    { "brand": "Ustraa", "source_channel": "youtube", "source_external_id": null, "priority": "medium", "product_associations": ["FBT SE"] },
+    { "brand": "Ustraa", "source_channel": "brand_site", "source_external_id": "https://www.ustraa.com", "priority": "medium", "product_associations": ["FBT SE"] },
+    { "brand": "Ustraa", "source_channel": "manual", "source_external_id": null, "priority": "medium", "product_associations": ["FBT SE"] },
+
+    { "brand": "Mi Beard / Xiaomi Grooming", "source_channel": "youtube", "source_external_id": null, "priority": "low", "product_associations": ["FBT SE"] },
+    { "brand": "Mi Beard / Xiaomi Grooming", "source_channel": "brand_site", "source_external_id": null, "priority": "low", "product_associations": ["FBT SE"] },
+    { "brand": "Mi Beard / Xiaomi Grooming", "source_channel": "manual", "source_external_id": null, "priority": "low", "product_associations": ["FBT SE"] },
+
+    { "brand": "Park Avenue", "source_channel": "youtube", "source_external_id": null, "priority": "low", "product_associations": ["FBT SE"] },
+    { "brand": "Park Avenue", "source_channel": "manual", "source_external_id": null, "priority": "low", "product_associations": ["FBT SE"] },
+
+    { "brand": "Bombay Shaving Company (internal)", "source_channel": "meta_marketing", "source_external_id": "self", "priority": "high", "product_associations": ["FBT SE"] },
+    { "brand": "Bombae (internal)", "source_channel": "meta_marketing", "source_external_id": "self", "priority": "high", "product_associations": [] }
+  ]
+}

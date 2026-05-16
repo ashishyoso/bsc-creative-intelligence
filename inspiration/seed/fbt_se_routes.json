@@ -1,0 +1,118 @@
+{
+  "product": {
+    "name": "FBT SE",
+    "brand": "BSC",
+    "description": "Full Body Trimmer Special Edition. Inaugural product for Inspiration tool taxonomy."
+  },
+  "routes": [
+    {
+      "name": "Vault",
+      "design_tone": "TBD — import from FBTSE_Creative_Brief_Bank_v2.xlsx",
+      "hard_no_list": [],
+      "funnel_split": null,
+      "static_format_notes": null,
+      "gif_format_notes": null,
+      "video_format_notes": null
+    },
+    {
+      "name": "Baitsy",
+      "design_tone": "TBD — import from FBTSE_Creative_Brief_Bank_v2.xlsx",
+      "hard_no_list": [],
+      "funnel_split": null,
+      "static_format_notes": null,
+      "gif_format_notes": null,
+      "video_format_notes": null
+    },
+    {
+      "name": "ASMR Sensory",
+      "design_tone": "TBD — import from FBTSE_Creative_Brief_Bank_v2.xlsx",
+      "hard_no_list": [],
+      "funnel_split": null,
+      "static_format_notes": null,
+      "gif_format_notes": null,
+      "video_format_notes": null
+    },
+    {
+      "name": "The Upgrade",
+      "design_tone": "TBD — import from FBTSE_Creative_Brief_Bank_v2.xlsx",
+      "hard_no_list": [],
+      "funnel_split": null,
+      "static_format_notes": null,
+      "gif_format_notes": null,
+      "video_format_notes": null
+    },
+    {
+      "name": "Travel",
+      "design_tone": "TBD — import from FBTSE_Creative_Brief_Bank_v2.xlsx",
+      "hard_no_list": [],
+      "funnel_split": null,
+      "static_format_notes": null,
+      "gif_format_notes": null,
+      "video_format_notes": null
+    },
+    {
+      "name": "Social Proof",
+      "design_tone": "TBD — import from FBTSE_Creative_Brief_Bank_v2.xlsx",
+      "hard_no_list": [],
+      "funnel_split": null,
+      "static_format_notes": null,
+      "gif_format_notes": null,
+      "video_format_notes": null
+    },
+    {
+      "name": "Gifting",
+      "design_tone": "TBD — import from FBTSE_Creative_Brief_Bank_v2.xlsx",
+      "hard_no_list": [],
+      "funnel_split": null,
+      "static_format_notes": null,
+      "gif_format_notes": null,
+      "video_format_notes": null
+    },
+    {
+      "name": "South India Vernacular",
+      "design_tone": "TBD — import from FBTSE_Creative_Brief_Bank_v2.xlsx",
+      "hard_no_list": [],
+      "funnel_split": null,
+      "static_format_notes": null,
+      "gif_format_notes": null,
+      "video_format_notes": null
+    },
+    {
+      "name": "Problem → Solution",
+      "design_tone": "TBD — import from FBTSE_Creative_Brief_Bank_v2.xlsx",
+      "hard_no_list": [],
+      "funnel_split": null,
+      "static_format_notes": null,
+      "gif_format_notes": null,
+      "video_format_notes": null
+    },
+    {
+      "name": "Morning Ritual",
+      "design_tone": "TBD — import from FBTSE_Creative_Brief_Bank_v2.xlsx",
+      "hard_no_list": [],
+      "funnel_split": null,
+      "static_format_notes": null,
+      "gif_format_notes": null,
+      "video_format_notes": null
+    },
+    {
+      "name": "Tech Reviewer UGC",
+      "design_tone": "TBD — import from FBTSE_Creative_Brief_Bank_v2.xlsx",
+      "hard_no_list": [],
+      "funnel_split": null,
+      "static_format_notes": null,
+      "gif_format_notes": null,
+      "video_format_notes": null
+    },
+    {
+      "name": "Lowest Price on Website",
+      "design_tone": "TBD — import from FBTSE_Creative_Brief_Bank_v2.xlsx",
+      "hard_no_list": [],
+      "funnel_split": null,
+      "static_format_notes": null,
+      "gif_format_notes": null,
+      "video_format_notes": null
+    }
+  ],
+  "_note": "Route names verbatim from spec US-1.2. Definition fields (design_tone, hard_no_list, funnel_split, format notes) are stubs — must be replaced from FBTSE_Creative_Brief_Bank_v2.xlsx before first editor session. Route quality is the leverage point per spec note."
+}
