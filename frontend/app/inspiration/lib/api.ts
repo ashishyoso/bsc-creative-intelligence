@@ -341,6 +341,11 @@ export const insp = {
 
   // Ops / reports
   sourceHealth: () => request<SourceHealth[]>('/sources/health'),
+  triggerIngest: (source: SourceChannel) =>
+    request<{ source: string; ok: boolean; records?: number; error?: string }>(
+      `/sources/${source}/trigger`,
+      { method: 'POST' },
+    ),
   decisionsLog: (params: Record<string, any>) =>
     request<DecisionLogRow[]>(`/reports/decisions${qs(params)}`),
   sourceVolume: (weeks = 12) =>

@@ -1,15 +1,19 @@
-"""US-2.6 — Source Health Dashboard."""
+"""US-2.6 — Source Health Dashboard + manual trigger endpoints for testing."""
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from app.inspiration.auth import require_roles
 from app.inspiration.db import get_db
 from app.inspiration.models import SourcePull, Video
 from app.inspiration.schemas import SourceHealth
+
+log = logging.getLogger("inspiration.sources")
 
 router = APIRouter(prefix="/inspiration/sources", tags=["inspiration:ops"])
 
@@ -70,3 +74,32 @@ def source_health(db: Session = Depends(get_db)):
             )
         )
     return out
+
+
+# --- manual trigger for one-off testing of an ingest worker -----------------
+# Runs the worker inline (not via the scheduler) so the response carries
+# the result + any error. Synchronous — caller waits. Useful before
+# enabling INSPIRATION_SCHEDULER=on globally.
+@router.post("/{source}/trigger")
+def trigger_ingest(
+    source: str,
+    user=Depends(require_roles("ops_lead", "admin")),
+):
+    if source not in ("meta_ad_library", "meta_marketing", "youtube", "tiktok", "brand_site"):
+        raise HTTPException(400, f"unknown source: {source}")
+    try:
+        if source == "meta_ad_library":
+            from app.inspiration.ingest import meta_ad_library as worker
+        elif source == "meta_marketing":
+            from app.inspiration.ingest import meta_marketing as worker
+        elif source == "youtube":
+            from app.inspiration.ingest import youtube as worker
+        elif source == "tiktok":
+            from app.inspiration.ingest import tiktok as worker
+        else:  # brand_site
+            from app.inspiration.ingest import brand_sites as worker
+        records = worker.run()
+        return {"source": source, "ok": True, "records": records}
+    except Exception as e:
+        log.exception("manual ingest %s failed", source)
+        return {"source": source, "ok": False, "error": f"{type(e).__name__}: {e}"}
