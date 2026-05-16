@@ -1,9 +1,9 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signInWithGoogle, useUser } from '../lib/session';
 
-export default function LoginPage() {
+function LoginInner() {
   const router = useRouter();
   const search = useSearchParams();
   const user = useUser();
@@ -51,5 +51,13 @@ export default function LoginPage() {
         {err && <div className="panel" style={{ background: '#fee', marginTop: 16 }}>{err}</div>}
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<main className="panel" style={{ maxWidth: 480, margin: '80px auto' }}>Loading…</main>}>
+      <LoginInner />
+    </Suspense>
   );
 }
