@@ -20,7 +20,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/" className="brand" style={{ textDecoration: 'none' }}>
               <span className="brand-mark">●</span>
               <span>YOSO-BSC Creative Intelligence</span>
-              <span className="brand-meta">v0.2</span>
             </Link>
             <nav className="primary-nav">
               <NavLinks />
