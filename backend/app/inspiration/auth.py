@@ -66,12 +66,41 @@ def _upsert_user(db: Session, claims: dict) -> User:
     return user
 
 
+ANON_USER_EMAIL = "anonymous@inspiration.local"
+ANON_USER_NAME = "Anonymous"
+
+
+def _get_or_create_anon_user(db: Session) -> User:
+    """Shared fall-back identity used while auth is open. All decisions made
+    without a Bearer token are attributed to this single user. Once Google
+    OAuth is configured and the frontend layout guards /inspiration again,
+    real users will be auto-created from their JWTs and this user becomes
+    inert."""
+    user = db.query(User).filter(User.email == ANON_USER_EMAIL).first()
+    if user is None:
+        user = User(id=ulid(), email=ANON_USER_EMAIL, name=ANON_USER_NAME, is_active=True)
+        db.add(user)
+        db.flush()
+        # Grant every role so admin/ops/reports endpoints work while open.
+        for role in ("editor", "strategist", "senior_reviewer", "ops_lead", "founder", "admin"):
+            db.add(UserRole(user_id=user.id, role=role))
+        db.commit()
+    return user
+
+
 def current_user(request: Request, db: Session = Depends(get_db)) -> User:
     auth = request.headers.get("authorization", "")
     if not auth.lower().startswith("bearer "):
-        raise HTTPException(401, "bearer token required")
+        # Open mode — no auth wired. Hand back the shared anon user so
+        # routers (and require_roles) keep working without changes.
+        return _get_or_create_anon_user(db)
     token = auth[7:]
-    claims = _verify_jwt(token)
+    try:
+        claims = _verify_jwt(token)
+    except HTTPException:
+        # Token present but invalid (e.g. stale session, wrong secret).
+        # Don't 401 — fall through to anon so the UI keeps functioning.
+        return _get_or_create_anon_user(db)
     user = _upsert_user(db, claims)
     if not user.is_active:
         raise HTTPException(403, "user inactive")
