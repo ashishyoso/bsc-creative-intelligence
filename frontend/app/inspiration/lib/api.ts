@@ -162,7 +162,9 @@ export type RouteCoverageRow = {
 
 // ----------------------------------------------------------------- fetch core
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const resp = await fetch(`/inspiration${path}`, {
+  // Frontend calls go through Next's /api/:path* rewrite to FastAPI,
+  // which serves the Inspiration routers at /inspiration/...
+  const resp = await fetch(`/api/inspiration${path}`, {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',

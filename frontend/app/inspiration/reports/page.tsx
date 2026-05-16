@@ -35,7 +35,7 @@ function DecisionsTab() {
     <section className="panel">
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <h2>Decisions log</h2>
-        <a href="/inspiration/reports/decisions.csv" download>Download CSV</a>
+        <a href="/api/inspiration/reports/decisions.csv" download>Download CSV</a>
       </div>
       {error && <div className="panel" style={{ background: '#fee' }}>{error}</div>}
       <table style={{ width: '100%', marginTop: 8 }}>
