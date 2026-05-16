@@ -126,30 +126,6 @@ CORS_ORIGINS = (
 
 
 app = FastAPI(title="YOSO-BSC Creative Intelligence", version="0.2.0")
-
-
-# Temporary debug error handler scoped to /inspiration/* — exposes tracebacks
-# in the response body so we can diagnose 500s without Railway log access.
-# Remove once Inspiration is healthy.
-@app.exception_handler(Exception)
-async def _inspiration_debug_errors(request: Request, exc: Exception):
-    import traceback as _tb
-    path = request.url.path
-    if path.startswith("/inspiration"):
-        return JSONResponse(
-            status_code=500,
-            content={
-                "error": str(exc),
-                "type": type(exc).__name__,
-                "path": path,
-                "traceback": _tb.format_exc().splitlines()[-30:],
-            },
-        )
-    # Default: let FastAPI render its plain 500
-    log.exception("unhandled error on %s", path)
-    return JSONResponse(status_code=500, content={"detail": "Internal Server Error"})
-
-
 app.add_middleware(BasicAuthMiddleware)
 app.add_middleware(
     CORSMiddleware,
