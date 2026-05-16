@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.inspiration.db import get_db
 from app.inspiration.models import SourcePull, Video
-from app.inspiration.schemas import SOURCE_CHANNELS, SourceHealth  # type: ignore
+from app.inspiration.schemas import SourceHealth
 
 router = APIRouter(prefix="/inspiration/sources", tags=["inspiration:ops"])
 
