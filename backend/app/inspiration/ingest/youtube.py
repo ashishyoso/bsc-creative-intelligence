@@ -83,8 +83,36 @@ def _upsert(db: Session, brand: str, item: dict) -> bool:
     return True
 
 
-def _ingest_channel(db: Session, brand: str, channel_id: str, key: str, since: datetime, counter: dict) -> None:
+def _resolve_channel_id(brand: str, hint: str | None, key: str) -> str | None:
+    """If hint looks like a YouTube channel ID (UCxxxxxxxxxxxx), use it.
+    Otherwise look up by brand name via the search API and take the top
+    channel result. Returns None if nothing found."""
+    if hint and hint.startswith("UC") and len(hint) >= 22:
+        return hint
+    query = hint or brand
     try:
+        resp = _get("search", {
+            "key": key,
+            "part": "snippet",
+            "q": query,
+            "type": "channel",
+            "maxResults": 1,
+        })
+        items = resp.get("items", [])
+        if not items:
+            return None
+        return items[0].get("id", {}).get("channelId") or items[0].get("snippet", {}).get("channelId")
+    except Exception:
+        log.exception("youtube: channel lookup failed for %s", brand)
+        return None
+
+
+def _ingest_channel(db: Session, brand: str, channel_hint: str | None, key: str, since: datetime, counter: dict) -> None:
+    try:
+        channel_id = _resolve_channel_id(brand, channel_hint, key)
+        if not channel_id:
+            log.warning("youtube: no channel resolved for %s (hint=%s)", brand, channel_hint)
+            return
         search = _get(
             "search",
             {
@@ -113,7 +141,7 @@ def _ingest_channel(db: Session, brand: str, channel_id: str, key: str, since: d
                 counter["records"] += 1
         db.commit()
     except Exception as e:
-        log.exception("youtube: channel %s failed", channel_id)
+        log.exception("youtube: channel for %s failed", brand)
         counter["errors"] += 1
         counter["last_error"] = f"{brand}: {e}"
 
@@ -137,9 +165,7 @@ def run(first_run: bool = False) -> int:
                 .all()
             )
             for entry in entries:
-                if not entry.source_external_id:
-                    log.warning("watchlist entry %s has no channel id", entry.brand)
-                    continue
+                # source_external_id is optional now — falls back to search by brand
                 _ingest_channel(db, entry.brand, entry.source_external_id, key, since, counter)
             return counter["records"]
         finally:
