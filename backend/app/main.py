@@ -167,16 +167,18 @@ if os.getenv("INSPIRATION_DATABASE_URL") or os.getenv("DATABASE_URL"):
     app.include_router(insp_sources_router.router)
     app.include_router(insp_reports_router.router)
 
-    # Cron registration. Schedulers are no-ops if APScheduler is not installed.
-    @app.on_event("startup")
-    def _start_inspiration_scheduler():
-        from app.inspiration.ingest.scheduler import start as _start
-        _start()
+    # Scheduler startup hook intentionally disabled while debugging Railway
+    # healthcheck failures. Re-enable by setting INSPIRATION_SCHEDULER=on.
+    if os.getenv("INSPIRATION_SCHEDULER") == "on":
+        @app.on_event("startup")
+        def _start_inspiration_scheduler():
+            from app.inspiration.ingest.scheduler import start as _start
+            _start()
 
-    @app.on_event("shutdown")
-    def _stop_inspiration_scheduler():
-        from app.inspiration.ingest.scheduler import shutdown as _stop
-        _stop()
+        @app.on_event("shutdown")
+        def _stop_inspiration_scheduler():
+            from app.inspiration.ingest.scheduler import shutdown as _stop
+            _stop()
 else:
     log.info("Inspiration router disabled: INSPIRATION_DATABASE_URL not set")
 
