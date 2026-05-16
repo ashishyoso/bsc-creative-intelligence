@@ -140,10 +140,17 @@ class VideoDetail(VideoSummary):
 
 
 class ManualVideoIn(BaseModel):
-    """US-2.7 — manual override / add video."""
+    """US-2.7 — manual override / add video.
+
+    All manual entries are stored with source_channel='manual' so they're
+    distinguishable from automated ingests. `original_platform` records
+    where the video actually lived (free text — youtube, instagram_reel,
+    direct mp4, etc.) for editor context.
+    """
     url: str
-    source_channel: SourceChannel
     brand: str
+    headline: str | None = None
+    original_platform: str | None = None
     source_published_at: datetime | None = None
     product_ids: list[str] = Field(default_factory=list)
 

@@ -16,6 +16,7 @@ export default function AdminHub() {
           <li><Link href="/inspiration/admin/routes">Routes</Link> — US-1.2 (per product)</li>
           <li><Link href="/inspiration/admin/watchlist">Watchlist</Link> — US-1.3 (per source)</li>
           <li><Link href="/inspiration/admin/sources">Source health</Link> — US-2.6</li>
+          <li><Link href="/inspiration/admin/manual">Add video manually</Link> — US-2.7</li>
         </ul>
       </section>
     </main>

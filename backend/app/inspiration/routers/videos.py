@@ -99,19 +99,21 @@ def get_video(video_id: str, db: Session = Depends(get_db)):
 @router.post("/manual", response_model=VideoSummary, status_code=201)
 def add_manual_video(
     body: ManualVideoIn,
-    user=Depends(require_roles("ops_lead", "senior_reviewer", "admin")),
+    user=Depends(require_roles("ops_lead", "senior_reviewer", "admin", "editor")),
     db: Session = Depends(get_db),
 ):
     """US-2.7 — manual override. Marked source=manual; jumps to top of FIFO."""
-    # Use a synthetic external id so multiple manual entries can coexist
+    # Synthetic external id so multiple manual entries can coexist for the
+    # same URL.
     ext_id = f"manual:{ulid()}"
     v = Video(
         id=ulid(),
         source_channel="manual",
         source_external_id=ext_id,
-        brand=body.brand,
-        video_url=body.url,
-        fetched_at=body.source_published_at,
+        brand=body.brand.strip(),
+        headline=body.headline,
+        video_url=body.url.strip(),
+        publisher_platforms=[body.original_platform] if body.original_platform else None,
         source_published_at=body.source_published_at,
         added_by=user.id,
     )

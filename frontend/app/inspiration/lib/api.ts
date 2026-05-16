@@ -250,7 +250,14 @@ export const insp = {
     offset?: number;
   }) => request<VideoSummary[]>(`/videos${qs(params)}`),
   getVideo: (id: string) => request<VideoDetail>(`/videos/${id}`),
-  addManualVideo: (b: { url: string; source_channel: SourceChannel; brand: string }) =>
+  addManualVideo: (b: {
+    url: string;
+    brand: string;
+    headline?: string;
+    original_platform?: string;
+    source_published_at?: string;
+    product_ids?: string[];
+  }) =>
     request<VideoSummary>('/videos/manual', { method: 'POST', body: JSON.stringify(b) }),
 
   // Decisions
