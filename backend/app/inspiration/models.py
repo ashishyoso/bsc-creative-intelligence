@@ -53,7 +53,14 @@ class User(Base):
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
-    roles = relationship("UserRole", back_populates="user", cascade="all, delete-orphan")
+    # Two FKs from UserRole to users.id (user_id + granted_by). Be explicit
+    # so SQLAlchemy knows which one identifies the role owner.
+    roles = relationship(
+        "UserRole",
+        back_populates="user",
+        foreign_keys="UserRole.user_id",
+        cascade="all, delete-orphan",
+    )
 
 
 class UserRole(Base):
