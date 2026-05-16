@@ -1,50 +1,60 @@
 """
-US-9.1 — Video caching to own storage (Cloudflare R2).
+US-9.1 — Video caching to own storage (Supabase Storage).
 
-R2 is S3-compatible. We use boto3 against the R2 endpoint. Public bucket
-URLs serve cached videos so the swipe UI playback isn't dependent on Meta
-CDN URLs (which expire). On ingest, each video's source URL is downloaded
-once, hashed (SHA-256, first 16 hex), and stored as <hash>.mp4 in R2.
+Supabase Storage is S3-compatible. We reuse boto3 against the S3 endpoint
+Supabase exposes. Public bucket URLs serve cached videos so the swipe UI
+playback isn't dependent on Meta CDN URLs (which expire). On ingest, each
+video's source URL is downloaded once, hashed (SHA-256, first 16 hex), and
+stored as <hash>.mp4 in the configured bucket.
+
+The bucket must be marked **public** in Supabase Storage settings (so the
+public URL serves bytes without auth). Storage access keys come from the
+Storage → S3 Settings tab in the Supabase dashboard.
 
 Env:
-- R2_ACCOUNT_ID
-- R2_ACCESS_KEY_ID
-- R2_SECRET_ACCESS_KEY
-- R2_BUCKET                 (e.g. bsc-inspiration-cache)
-- R2_PUBLIC_BASE            (e.g. https://cache.creative.yoso.media)
+- SUPABASE_URL                          (e.g. https://abcd.supabase.co)
+- SUPABASE_STORAGE_BUCKET               (e.g. inspiration-cache)
+- SUPABASE_STORAGE_ACCESS_KEY_ID        (from Storage → S3 Settings)
+- SUPABASE_STORAGE_SECRET_ACCESS_KEY
+- SUPABASE_STORAGE_REGION               (default: us-east-1; whatever the project is in)
 """
 from __future__ import annotations
 
 import hashlib
 import logging
 import os
-from typing import Optional
 
 log = logging.getLogger("inspiration.cache")
 
 
-def _r2_client():
+def _client():
     import boto3
     from botocore.config import Config
 
+    supabase_url = os.environ["SUPABASE_URL"].rstrip("/")
     return boto3.client(
         "s3",
-        endpoint_url=f"https://{os.environ['R2_ACCOUNT_ID']}.r2.cloudflarestorage.com",
-        aws_access_key_id=os.environ["R2_ACCESS_KEY_ID"],
-        aws_secret_access_key=os.environ["R2_SECRET_ACCESS_KEY"],
+        endpoint_url=f"{supabase_url}/storage/v1/s3",
+        aws_access_key_id=os.environ["SUPABASE_STORAGE_ACCESS_KEY_ID"],
+        aws_secret_access_key=os.environ["SUPABASE_STORAGE_SECRET_ACCESS_KEY"],
         config=Config(signature_version="s3v4"),
-        region_name="auto",
+        region_name=os.getenv("SUPABASE_STORAGE_REGION", "us-east-1"),
     )
 
 
+def _public_url(key: str) -> str:
+    supabase_url = os.environ["SUPABASE_URL"].rstrip("/")
+    bucket = os.environ["SUPABASE_STORAGE_BUCKET"]
+    return f"{supabase_url}/storage/v1/object/public/{bucket}/{key}"
+
+
 def cache_video(source_url: str, content: bytes) -> tuple[str, str]:
-    """Upload <bytes> as <hash>.mp4 to R2. Returns (cached_url, video_hash)."""
-    bucket = os.environ["R2_BUCKET"]
-    public_base = os.environ["R2_PUBLIC_BASE"].rstrip("/")
+    """Upload <bytes> as <hash>.mp4. Returns (public_url, video_hash)."""
+    bucket = os.environ["SUPABASE_STORAGE_BUCKET"]
     full_hash = hashlib.sha256(content).hexdigest()
     short = full_hash[:16]
     key = f"videos/{short}.mp4"
-    client = _r2_client()
+    client = _client()
     client.put_object(
         Bucket=bucket,
         Key=key,
@@ -52,13 +62,12 @@ def cache_video(source_url: str, content: bytes) -> tuple[str, str]:
         ContentType="video/mp4",
         CacheControl="public, max-age=31536000",
     )
-    return f"{public_base}/{key}", full_hash
+    return _public_url(key), full_hash
 
 
 def evict_rejected_older_than(days: int = 180) -> int:
-    """Cache eviction policy (US-9.1): rejected videos older than 180 days
-    have their R2 objects deleted; DB metadata is kept. Returns count
-    evicted."""
+    """US-9.1 cache eviction. Rejected videos older than <days> have their
+    storage object deleted; DB metadata is kept. Returns count evicted."""
     from datetime import datetime, timedelta, timezone
 
     from app.inspiration.db import get_db
@@ -78,8 +87,8 @@ def evict_rejected_older_than(days: int = 180) -> int:
             )
             .all()
         )
-        client = _r2_client()
-        bucket = os.environ["R2_BUCKET"]
+        client = _client()
+        bucket = os.environ["SUPABASE_STORAGE_BUCKET"]
         n = 0
         for v in candidates:
             if not v.video_url_cached or not v.video_hash:

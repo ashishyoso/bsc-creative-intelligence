@@ -23,22 +23,22 @@ Frontend pages live under `frontend/app/inspiration/` (already stubbed at `/insp
 
 ## Stack (Option C — hybrid)
 
-- **DB:** Supabase Postgres (separate project from existing pilot's SQLite)
-- **Storage:** Cloudflare R2 (video cache, US-9.1)
+- **DB:** Supabase Postgres (shared with pilot — no table name collisions)
+- **Storage:** Supabase Storage (video cache, US-9.1) — S3-compatible bucket
 - **Auth:** Supabase Auth via Google Workspace SSO (yoso.media)
 - **Ingest workers:** Python, run as cron jobs inside existing FastAPI process
 - **Frontend:** Next.js 15 (reuses existing shell)
-- **Sync:** Notion API (one-way mirror, US-5.4)
+- **Sync:** Notion API (one-way mirror, US-5.4) — optional, depends on where briefs live
 
 ## Provisioning checklist
 
 See [`docs/inspiration-build-plan.md`](../docs/inspiration-build-plan.md) Day 0–2 table. Nothing in this directory runs until:
 
-1. Supabase project created, `001_init.sql` applied
-2. R2 bucket provisioned
+1. Supabase project ready (shared with pilot), `001_init.sql` applied
+2. Supabase Storage public bucket provisioned (`inspiration-cache`) + S3 access keys
 3. Meta dev identity verification submitted (1–3 day lead)
 4. YouTube Data API key issued
-5. Notion integration token + workspace permissions granted
+5. Notion integration token + workspace permissions granted (skip if briefs live elsewhere)
 6. Google Workspace SSO wired
 
 ## Status

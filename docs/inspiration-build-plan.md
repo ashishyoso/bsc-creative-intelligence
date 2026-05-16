@@ -3,7 +3,7 @@
 **Spec:** `BSC_Creative_Intelligence_Tool_User_Stories.pdf` v1.0 (16 May 2026)
 **Plan author:** Ashish + Claude (16 May 2026)
 **Status:** Active build plan
-**Architectural fork:** Option C (greenfield Supabase + R2 backend for the Inspiration tool, frontend reuses existing Next.js shell, ingest workers run inside existing FastAPI process)
+**Architectural fork:** Option C (Supabase Postgres + Supabase Storage backend for the Inspiration tool, frontend reuses existing Next.js shell, ingest workers run inside existing FastAPI process). Updated 2026-05-16: R2 dropped in favour of Supabase Storage for vendor consolidation.
 
 ---
 
@@ -30,7 +30,7 @@ Inspiration tables live in their own Supabase project, behind their own FastAPI 
 | Meta Business Manager system user token (BSC + Bombae) | Rishav | 1 day | US-2.2 |
 | Google Cloud project + YouTube Data API v3 key | Rishav | <1 day | US-2.3 |
 | Notion integration token + workspace write access | Rishav | <1 day | US-5.4, US-6.1 |
-| Supabase project + Cloudflare R2 bucket | Dev | <1 day | Everything |
+| Supabase Storage bucket (`inspiration-cache`, public) + S3 access keys | Dev | <1 day | Everything |
 | Google Workspace SSO (yoso.media) wired to Supabase auth | Dev | <1 day | US-1.4 |
 | FBT SE route definitions imported from `FBTSE_Creative_Brief_Bank_v2.xlsx` | Founder + Diksha | 1 day | US-1.2 |
 | Watchlist seed list approved (Appendix B is draft) | Founder | <1 day | US-1.3 |
