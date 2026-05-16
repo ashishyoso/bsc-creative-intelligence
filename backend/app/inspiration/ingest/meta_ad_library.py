@@ -132,9 +132,6 @@ def run() -> int:
                 .all()
             )
             for entry in brands:
-                if not entry.source_external_id:
-                    log.warning("watchlist entry %s has no page_id; skipping", entry.brand)
-                    continue
                 try:
                     cursor = None
                     while True:
@@ -144,10 +141,14 @@ def run() -> int:
                             "ad_active_status": "ACTIVE",
                             "ad_reached_countries": COUNTRIES,
                             "media_type": "VIDEO",
-                            "search_page_ids": entry.source_external_id,
                             "fields": FIELDS,
                             "limit": 50,
                         }
+                        # Prefer page ID when available; fall back to brand-name search.
+                        if entry.source_external_id:
+                            params["search_page_ids"] = entry.source_external_id
+                        else:
+                            params["search_terms"] = entry.brand
                         if cursor:
                             params["after"] = cursor
                         data = _request_with_backoff(params)
