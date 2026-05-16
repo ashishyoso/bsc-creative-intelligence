@@ -61,3 +61,37 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+# --- Idempotent schema bootstrap ----------------------------------------
+# Railway's Data-tab SQL editor doesn't reliably run multi-statement files,
+# so we ensure ENUM types + tables exist via the ORM at startup. Safe to
+# call repeatedly — Postgres DO-blocks swallow duplicate_object, and
+# Base.metadata.create_all skips existing tables.
+
+_INSPIRATION_ENUMS = (
+    ("source_channel", ("meta_ad_library", "meta_marketing", "youtube", "tiktok", "brand_site", "manual")),
+    ("user_role", ("editor", "strategist", "senior_reviewer", "ops_lead", "founder", "admin")),
+    ("video_status", ("pending", "saved", "rejected", "escalated")),
+    ("decision_action", ("saved", "rejected", "escalated")),
+    ("replicability_tier", ("yes", "stretch", "no")),
+    ("watchlist_priority", ("high", "medium", "low")),
+)
+
+
+def ensure_schema() -> None:
+    """Create Inspiration ENUM types + tables if missing. Idempotent."""
+    # Force model registration before create_all (no-op if already imported).
+    from app.inspiration import models  # noqa: F401
+
+    eng = _ensure_engine()
+    with eng.begin() as conn:
+        for name, values in _INSPIRATION_ENUMS:
+            vals = ", ".join(f"'{v}'" for v in values)
+            conn.exec_driver_sql(
+                f"DO $$ BEGIN "
+                f"CREATE TYPE {name} AS ENUM ({vals}); "
+                f"EXCEPTION WHEN duplicate_object THEN null; "
+                f"END $$;"
+            )
+    Base.metadata.create_all(bind=eng)

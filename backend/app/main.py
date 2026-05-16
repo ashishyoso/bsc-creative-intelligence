@@ -191,6 +191,18 @@ if os.getenv("INSPIRATION_DATABASE_URL") or os.getenv("DATABASE_URL"):
     app.include_router(insp_sources_router.router)
     app.include_router(insp_reports_router.router)
 
+    # Idempotent: ensure Inspiration ENUMs + tables exist before serving
+    # traffic. Required because Railway's SQL editor doesn't reliably run
+    # multi-statement migrations. Safe to call on every boot.
+    @app.on_event("startup")
+    def _ensure_inspiration_schema():
+        try:
+            from app.inspiration.db import ensure_schema
+            ensure_schema()
+            log.info("Inspiration schema ensured")
+        except Exception:
+            log.exception("inspiration ensure_schema failed")
+
     # Scheduler startup hook intentionally disabled while debugging Railway
     # healthcheck failures. Re-enable by setting INSPIRATION_SCHEDULER=on.
     if os.getenv("INSPIRATION_SCHEDULER") == "on":
