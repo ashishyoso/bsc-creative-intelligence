@@ -11,12 +11,17 @@ The bucket must be marked **public** in Supabase Storage settings (so the
 public URL serves bytes without auth). Storage access keys come from the
 Storage → S3 Settings tab in the Supabase dashboard.
 
+Important: Supabase's S3 endpoint lives on the `<ref>.storage.supabase.co`
+subdomain, NOT the project's `<ref>.supabase.co`. We take the full endpoint
+URL from env to avoid hand-constructing it.
+
 Env:
-- SUPABASE_URL                          (e.g. https://abcd.supabase.co)
+- SUPABASE_URL                          (e.g. https://abcd.supabase.co) — used to build public read URLs
+- SUPABASE_STORAGE_ENDPOINT             (e.g. https://abcd.storage.supabase.co/storage/v1/s3) — from Storage → S3 Settings
 - SUPABASE_STORAGE_BUCKET               (e.g. inspiration-cache)
 - SUPABASE_STORAGE_ACCESS_KEY_ID        (from Storage → S3 Settings)
 - SUPABASE_STORAGE_SECRET_ACCESS_KEY
-- SUPABASE_STORAGE_REGION               (default: us-east-1; whatever the project is in)
+- SUPABASE_STORAGE_REGION               (e.g. ap-southeast-1; matches Supabase project region)
 """
 from __future__ import annotations
 
@@ -27,14 +32,25 @@ import os
 log = logging.getLogger("inspiration.cache")
 
 
+def _storage_endpoint() -> str:
+    explicit = os.getenv("SUPABASE_STORAGE_ENDPOINT")
+    if explicit:
+        return explicit.rstrip("/")
+    # Fallback: construct from SUPABASE_URL by injecting .storage. subdomain
+    supabase_url = os.environ["SUPABASE_URL"].rstrip("/")
+    # https://<ref>.supabase.co → https://<ref>.storage.supabase.co/storage/v1/s3
+    if ".supabase.co" in supabase_url and ".storage.supabase.co" not in supabase_url:
+        supabase_url = supabase_url.replace(".supabase.co", ".storage.supabase.co")
+    return f"{supabase_url}/storage/v1/s3"
+
+
 def _client():
     import boto3
     from botocore.config import Config
 
-    supabase_url = os.environ["SUPABASE_URL"].rstrip("/")
     return boto3.client(
         "s3",
-        endpoint_url=f"{supabase_url}/storage/v1/s3",
+        endpoint_url=_storage_endpoint(),
         aws_access_key_id=os.environ["SUPABASE_STORAGE_ACCESS_KEY_ID"],
         aws_secret_access_key=os.environ["SUPABASE_STORAGE_SECRET_ACCESS_KEY"],
         config=Config(signature_version="s3v4"),
