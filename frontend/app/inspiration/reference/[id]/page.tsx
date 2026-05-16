@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import InspirationNav from '../../components/InspirationNav';
-import { insp, Reference, ShotBreakdown } from '../../lib/api';
+import { Brief, insp, Reference, ShotBreakdown } from '../../lib/api';
 
 // US-5.2 — reference detail. Permalink target. Editable shot breakdown (US-5.3).
 export default function ReferenceDetailPage() {
@@ -13,12 +13,14 @@ export default function ReferenceDetailPage() {
   const [sb, setSb] = useState<Partial<ShotBreakdown>>({});
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [usedIn, setUsedIn] = useState<Brief[]>([]);
 
   useEffect(() => {
     insp.getReference(params.id).then(r => {
       setRef(r);
       setSb(r.shot_breakdown ?? {});
     }).catch(e => setError(e.message));
+    insp.briefsCitingReference(params.id).then(setUsedIn).catch(() => {});
   }, [params.id]);
 
   async function saveSb() {
@@ -85,6 +87,20 @@ export default function ReferenceDetailPage() {
           <label style={{ gridColumn: '1 / -1' }}>End frame<textarea rows={2} value={sb.end_frame ?? ''} onChange={e => setSb(s => ({ ...s, end_frame: e.target.value || null }))} /></label>
         </div>
         <button onClick={saveSb} disabled={saving} style={{ marginTop: 12 }}>{saving ? 'Saving…' : 'Save breakdown'}</button>
+
+        <h2 style={{ marginTop: 32 }}>Used in (US-6.3)</h2>
+        {usedIn.length === 0 ? (
+          <p className="subtle">Not yet cited in any brief.</p>
+        ) : (
+          <ul>
+            {usedIn.map(b => (
+              <li key={b.id}>
+                <Link href={`/inspiration/briefs/${b.id}`}>{b.title}</Link>
+                <span className="subtle"> · {b.product_name} · {b.route_name} · {b.status}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </main>
   );

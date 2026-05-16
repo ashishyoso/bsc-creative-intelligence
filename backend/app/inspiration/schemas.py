@@ -299,6 +299,51 @@ class RouteCoverageRow(BaseModel):
 
 
 # -------------------------------------------------------------- video filters
+BriefStatus = Literal["draft", "approved"]
+
+
+class BriefIn(BaseModel):
+    product_id: str
+    route_id: str
+    title: str = Field(..., min_length=3)
+    external_doc_url: str | None = None
+    goal: str | None = None
+    notes: str | None = None
+
+
+class BriefRefIn(BaseModel):
+    decision_id: str
+    position: int = 0
+    note: str | None = None
+
+
+class BriefReferenceOut(ORMModel):
+    decision_id: str
+    position: int
+    note: str | None
+    added_at: datetime
+
+
+class BriefSummary(ORMModel):
+    id: str
+    product_id: str
+    product_name: str | None = None
+    route_id: str
+    route_name: str | None = None
+    title: str
+    status: BriefStatus
+    external_doc_url: str | None
+    reference_count: int = 0
+    created_at: datetime
+    created_by: str | None
+
+
+class BriefDetail(BriefSummary):
+    goal: str | None
+    notes: str | None
+    references: list[ReferenceOut] = []
+
+
 class VideoListQuery(BaseModel):
     """Bundles all P0 filter params for the queue and library views."""
     product_id: str | None = None

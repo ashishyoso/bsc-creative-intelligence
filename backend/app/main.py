@@ -43,6 +43,7 @@ from app.inspiration.routers import (
     escalations as insp_escalations_router,
     sources as insp_sources_router,
     reports as insp_reports_router,
+    briefs as insp_briefs_router,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -166,6 +167,7 @@ if os.getenv("INSPIRATION_DATABASE_URL") or os.getenv("DATABASE_URL"):
     app.include_router(insp_escalations_router.router)
     app.include_router(insp_sources_router.router)
     app.include_router(insp_reports_router.router)
+    app.include_router(insp_briefs_router.router)
 
     # Idempotent: ensure Inspiration ENUMs + tables exist before serving
     # traffic. Required because Railway's SQL editor doesn't reliably run

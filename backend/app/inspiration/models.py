@@ -302,3 +302,35 @@ class NotionSyncLog(Base):
     ok = Column(Boolean, nullable=False)
     error = Column(Text)
     retry_count = Column(Integer, nullable=False, default=0)
+
+
+# --------------------------------------------------------------- briefs (US-6)
+# Named `creative_briefs` to avoid clashing with the pilot's existing `briefs`
+# table. The brief manifest is a light wrapper: title + product + route +
+# attached references + status. Body content lives elsewhere (Notion / Docs)
+# via external_doc_url, OR inline in notes for in-tool drafting.
+class CreativeBrief(Base):
+    __tablename__ = "creative_briefs"
+
+    id = Column(String, primary_key=True)
+    product_id = Column(String, ForeignKey("products.id"), nullable=False)
+    route_id = Column(String, ForeignKey("routes.id"), nullable=False)
+    title = Column(String, nullable=False)
+    status = Column(String, nullable=False, default="draft")  # draft / approved
+    external_doc_url = Column(Text)
+    goal = Column(Text)
+    notes = Column(Text)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_by = Column(String, ForeignKey("users.id"))
+    approved_at = Column(DateTime(timezone=True))
+    approved_by = Column(String, ForeignKey("users.id"))
+
+
+class BriefReference(Base):
+    __tablename__ = "brief_references"
+
+    brief_id = Column(String, ForeignKey("creative_briefs.id", ondelete="CASCADE"), primary_key=True)
+    decision_id = Column(String, ForeignKey("decisions.id"), primary_key=True)
+    position = Column(Integer, nullable=False, default=0)
+    note = Column(Text)
+    added_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

@@ -6,6 +6,7 @@ import { signOut, useUser } from '../lib/session';
 const SECTIONS: Array<{ href: string; label: string }> = [
   { href: '/inspiration/queue', label: 'Queue' },
   { href: '/inspiration/library', label: 'Library' },
+  { href: '/inspiration/briefs', label: 'Briefs' },
   { href: '/inspiration/review', label: 'Review' },
   { href: '/inspiration/reports', label: 'Reports' },
   { href: '/inspiration/admin', label: 'Admin' },

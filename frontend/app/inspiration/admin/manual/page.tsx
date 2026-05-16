@@ -4,9 +4,21 @@ import { useEffect, useState } from 'react';
 import InspirationNav from '../../components/InspirationNav';
 import { insp, Product } from '../../lib/api';
 
+type Mode = 'single' | 'bulk';
+
+function detectPlatform(url: string): string | undefined {
+  if (/youtube\.com|youtu\.be/.test(url)) return 'youtube';
+  if (/instagram\.com\/(?:reel|p)/.test(url)) return 'instagram_reel';
+  if (/tiktok\.com/.test(url)) return 'tiktok';
+  if (/vimeo\.com/.test(url)) return 'vimeo';
+  if (/facebook\.com\/ads\/library/.test(url)) return 'meta_ad_library';
+  return undefined;
+}
+
 // US-2.7 — Manual override. Hand-feed videos by URL before automated
 // ingest is wired up. All entries land in the queue at the top (FIFO).
 export default function ManualAddPage() {
+  const [mode, setMode] = useState<Mode>('single');
   const [products, setProducts] = useState<Product[]>([]);
   const [url, setUrl] = useState('');
   const [brand, setBrand] = useState('');
@@ -16,6 +28,11 @@ export default function ManualAddPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recent, setRecent] = useState<Array<{ id: string; brand: string; url: string; at: string }>>([]);
+
+  // Bulk paste state
+  const [bulkText, setBulkText] = useState('');
+  const [bulkBrand, setBulkBrand] = useState('');
+  const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number; errors: string[] } | null>(null);
 
   useEffect(() => {
     insp.listProducts().then(setProducts).catch(e => setError(e.message));
@@ -47,6 +64,39 @@ export default function ManualAddPage() {
     }
   }
 
+  async function bulkSubmit() {
+    const lines = bulkText.split('\n').map(l => l.trim()).filter(l => l && /https?:\/\//i.test(l));
+    if (!lines.length) { setError('Paste at least one URL (one per line)'); return; }
+    if (!bulkBrand.trim()) { setError('Brand required for bulk paste — all entries get the same brand'); return; }
+    setSubmitting(true);
+    setError(null);
+    setBulkProgress({ done: 0, total: lines.length, errors: [] });
+    const errors: string[] = [];
+    let done = 0;
+    for (const u of lines) {
+      try {
+        const v = await insp.addManualVideo({
+          url: u,
+          brand: bulkBrand.trim(),
+          original_platform: detectPlatform(u),
+          product_ids: productIds.length ? productIds : undefined,
+        });
+        setRecent(prev => [
+          { id: v.id, brand: v.brand, url: v.video_url, at: new Date().toLocaleTimeString() },
+          ...prev,
+        ].slice(0, 20));
+      } catch (e: any) {
+        errors.push(`${u}: ${e?.message ?? String(e)}`);
+      }
+      done += 1;
+      setBulkProgress({ done, total: lines.length, errors });
+    }
+    setSubmitting(false);
+    if (errors.length === 0) {
+      setBulkText('');
+    }
+  }
+
   return (
     <main style={{ maxWidth: 720 }}>
       <InspirationNav />
@@ -62,6 +112,65 @@ export default function ManualAddPage() {
           editors should review.
         </p>
 
+        <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+          <button onClick={() => setMode('single')} className={mode === 'single' ? 'nav-active' : ''}>Single</button>
+          <button onClick={() => setMode('bulk')} className={mode === 'bulk' ? 'nav-active' : ''}>Bulk paste</button>
+        </div>
+
+        {mode === 'bulk' ? (
+          <div style={{ display: 'grid', gap: 12, marginTop: 16 }}>
+            <label>Brand *
+              <input
+                value={bulkBrand}
+                onChange={e => setBulkBrand(e.target.value)}
+                placeholder="All pasted URLs get this brand"
+                style={{ width: '100%' }}
+              />
+            </label>
+            <label>URLs (one per line) *
+              <textarea
+                value={bulkText}
+                onChange={e => setBulkText(e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=…
+https://www.instagram.com/reel/…
+https://vimeo.com/…"
+                rows={10}
+                style={{ width: '100%', fontFamily: 'monospace', fontSize: 13 }}
+              />
+              <span className="subtle">{bulkText.split('\n').filter(l => l.trim().match(/https?:\/\//i)).length} URLs detected</span>
+            </label>
+            <label>Associated products (optional, applies to all)
+              <select
+                multiple
+                value={productIds}
+                onChange={e => setProductIds(Array.from(e.target.selectedOptions).map(o => o.value))}
+                size={Math.min(Math.max(products.length, 3), 6)}
+              >
+                {products.map(p => <option key={p.id} value={p.id}>{p.brand} — {p.name}</option>)}
+              </select>
+            </label>
+
+            {bulkProgress && (
+              <div className="panel" style={{ background: '#1a1a1a' }}>
+                Progress: {bulkProgress.done} / {bulkProgress.total}
+                {bulkProgress.errors.length > 0 && (
+                  <div style={{ color: '#f44336', marginTop: 8 }}>
+                    {bulkProgress.errors.length} errors:
+                    <ul>{bulkProgress.errors.slice(0, 5).map((e, i) => <li key={i}>{e}</li>)}</ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {error && <div className="panel" style={{ background: '#fee', color: '#900' }}>{error}</div>}
+
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={bulkSubmit} disabled={submitting} style={{ background: '#4caf50', color: 'white' }}>
+                {submitting ? `Adding ${bulkProgress?.done ?? 0}/${bulkProgress?.total ?? 0}…` : 'Add all to queue'}
+              </button>
+            </div>
+          </div>
+        ) : (
         <div style={{ display: 'grid', gap: 12, marginTop: 16 }}>
           <label>Video URL *
             <input
@@ -127,6 +236,7 @@ export default function ManualAddPage() {
             </button>
           </div>
         </div>
+        )}
 
         {recent.length > 0 && (
           <div style={{ marginTop: 24 }}>

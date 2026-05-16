@@ -160,6 +160,28 @@ export type RouteCoverageRow = {
   is_under_served: boolean;
 };
 
+export type BriefStatus = 'draft' | 'approved';
+
+export type Brief = {
+  id: string;
+  product_id: string;
+  product_name: string | null;
+  route_id: string;
+  route_name: string | null;
+  title: string;
+  status: BriefStatus;
+  external_doc_url: string | null;
+  reference_count: number;
+  created_at: string;
+  created_by: string | null;
+};
+
+export type BriefDetail = Brief & {
+  goal: string | null;
+  notes: string | null;
+  references: Reference[];
+};
+
 // ----------------------------------------------------------------- fetch core
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   // Frontend calls go through Next's /api/:path* rewrite to FastAPI,
@@ -299,6 +321,23 @@ export const insp = {
     request('/escalations/resolve-save', { method: 'POST', body: JSON.stringify(b) }),
   resolveReject: (b: any) =>
     request('/escalations/resolve-reject', { method: 'POST', body: JSON.stringify(b) }),
+
+  // Briefs (Epic 6)
+  listBriefs: (params: { product_id?: string; route_id?: string; status?: BriefStatus } = {}) =>
+    request<Brief[]>(`/briefs${qs(params)}`),
+  createBrief: (b: { product_id: string; route_id: string; title: string; external_doc_url?: string; goal?: string; notes?: string }) =>
+    request<Brief>('/briefs', { method: 'POST', body: JSON.stringify(b) }),
+  getBrief: (id: string) => request<BriefDetail>(`/briefs/${id}`),
+  updateBrief: (id: string, b: Partial<Brief>) =>
+    request<Brief>(`/briefs/${id}`, { method: 'PATCH', body: JSON.stringify(b) }),
+  attachReference: (id: string, b: { decision_id: string; position?: number; note?: string }) =>
+    request(`/briefs/${id}/references`, { method: 'POST', body: JSON.stringify(b) }),
+  detachReference: (id: string, decision_id: string) =>
+    request<void>(`/briefs/${id}/references/${decision_id}`, { method: 'DELETE' }),
+  approveBrief: (id: string) =>
+    request<Brief>(`/briefs/${id}/approve`, { method: 'POST' }),
+  briefsCitingReference: (decision_id: string) =>
+    request<Brief[]>(`/briefs/by-reference/${decision_id}`),
 
   // Ops / reports
   sourceHealth: () => request<SourceHealth[]>('/sources/health'),
