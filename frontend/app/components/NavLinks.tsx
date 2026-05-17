@@ -3,11 +3,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const PRIMARY_GROUPS: Array<{ items: Array<{ href: string; label: string }> }> = [
-  {
-    items: [
-      { href: '/inspiration', label: 'Inspiration' },
-    ],
-  },
+  // Inspiration tab hidden until Meta Ad Library access is granted.
+  // Pages at /inspiration/* remain routable for internal use.
   {
     items: [
       { href: '/leaderboards', label: 'Leaderboards' },
